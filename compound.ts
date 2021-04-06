@@ -1,5 +1,6 @@
-import { default as axios } from "axios"
 import { ethers, providers, Wallet } from "ethers";
+import postToDiscord from "./utils/postToDiscord";
+import postToSnapshot from "./utils/postToSnapshot";
 
 require("dotenv").config()
 
@@ -20,7 +21,7 @@ export const watchCompound = () => {
         ]
     }
 
-    provider.on(filter, async (log, event) => {
+    provider.on(filter, async (log, _) => {
         const iface = new ethers.utils.Interface(eventReadable);
         const decodedEvent = iface.decodeEventLog("ProposalCreated", log.data);
 
@@ -37,60 +38,13 @@ export const watchCompound = () => {
 
 const makeCompSnapshot = async (signer: Wallet, id: number, desc: string, endBlock: number, spaceName: string) => {
 
-    const space = await (await axios.get("https://hub.snapshot.page/api/spaces/" + spaceName)).data;
     const description = `This proposal is for voting on Compound's proposal #${id} using DPI. Please review the proposal here: https://compound.finance/governance/proposals/${id}`
-    
-    const now = Math.floor(Date.now()/1000);
-    const endTime = now + 13 * (endBlock - await signer.provider.getBlockNumber()) - 24 * 60 * 60;
+    const title = `[COMPOUND-${id}] ${desc.split("#")[1].trim()}`
 
-    const prop = {
-        version: "0.1.3",
-        timestamp: (now-600) + "",
-        space: spaceName,
-        type: "proposal",
-        payload: {
-            name: `[COMPOUND-${id}] ${desc.split("#")[1].trim()}`,
-            body: description,
-            choices: ["For","Against"],
-            start: now,
-            end: endTime,
-            snapshot: await signer.provider.getBlockNumber(),
-            metadata: {
-                strategies: space.strategies
-            }
-        }
-    }
-
-    const data = {
-        address: await signer.getAddress(),
-        msg: JSON.stringify(prop),
-        sig: await signer.signMessage(JSON.stringify(prop))
-    }
-    
-    const config = {
-        method: 'post',
-        url: 'https://hub.snapshot.org/api/message',
-        headers: { 
-            'Content-Type': 'application/json', 
-        },
-        data : data
-    };
-
-    const res = await axios(config as any);
-    return res.data.ipfsHash;
+    return postToSnapshot(signer, title, description, endBlock, spaceName);
 }
 
 const messageDiscord = async (ipfsHash: string, id: number, desc: string, spaceName: string, webhook: string) => {
     const message = `A new proposal has been created for [COMPOUND-${id}] ${desc.split("#")[1].trim()}. This proposal is for voting on Compound's proposal #${id} using DPI. Please review the proposal here: https://snapshot.org/#/${spaceName}/proposal/${ipfsHash}`
-    const data = JSON.stringify({ content: message });
-    const config = {
-        method: 'post',
-        url: webhook,
-        headers: { 
-            'Content-Type': 'application/json', 
-        },
-        data : data
-    }
-
-    return await axios(config as any);
+    return await postToDiscord(message, webhook);
 }
