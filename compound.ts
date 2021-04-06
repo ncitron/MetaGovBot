@@ -1,38 +1,41 @@
-const { default: axios } = require('axios');
-const { ethers } = require("ethers");
+import { default as axios } from "axios"
+import { ethers, providers, Wallet } from "ethers";
+
 require("dotenv").config()
 
-const provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_URL);
-const signer = new ethers.Wallet(process.env.PRIV_KEY, provider);
+export const watchCompound = () => {
+    const provider: providers.JsonRpcProvider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_URL);
+    const signer: Wallet = new Wallet(process.env.PRIV_KEY, provider);
 
-const spaceName = process.env.SPACE_NAME;
-const webhook = process.env.DISCORD_WEBHOOK;
+    const spaceName = process.env.SPACE_NAME;
+    const webhook = process.env.DISCORD_WEBHOOK;
 
-const eventSignature = "ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)"
-const eventReadable = ["event ProposalCreated(uint id, address proposer, address[] targets, uint[] values, string[] signatures, bytes[] calldatas, uint startBlock, uint endBlock, string description)"]
+    const eventSignature = "ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)"
+    const eventReadable = ["event ProposalCreated(uint id, address proposer, address[] targets, uint[] values, string[] signatures, bytes[] calldatas, uint startBlock, uint endBlock, string description)"]
 
-const filter = {
-    address: process.env.COMPOUND_BRAVO_ADDRESS,
-    topics: [
-        ethers.utils.id(eventSignature)
-    ]
+    const filter = {
+        address: process.env.COMPOUND_BRAVO_ADDRESS,
+        topics: [
+            ethers.utils.id(eventSignature)
+        ]
+    }
+
+    provider.on(filter, async (log, event) => {
+        const iface = new ethers.utils.Interface(eventReadable);
+        const decodedEvent = iface.decodeEventLog("ProposalCreated", log.data);
+
+        const id = decodedEvent.id.toNumber();
+        const endBlock = decodedEvent.endBlock.toNumber();
+        const desc = decodedEvent.description;
+
+        const ipfsHash = await makeCompSnapshot(signer, id, desc, endBlock, spaceName);
+        await messageDiscord(ipfsHash, id, desc, spaceName, webhook);
+
+        console.log(ipfsHash);
+    });
 }
 
-provider.on(filter, async (log, event) => {
-    const interface = new ethers.utils.Interface(eventReadable);
-    const decodedEvent = interface.decodeEventLog("ProposalCreated", log.data);
-
-    const id = decodedEvent.id.toNumber();
-    const endBlock = decodedEvent.endBlock.toNumber();
-    const desc = decodedEvent.description;
-
-    const ipfsHash = await makeCompSnapshot(signer, id, desc, endBlock);
-    await messageDiscord(ipfsHash, id, desc);
-
-    console.log(ipfsHash);
-});
-
-const makeCompSnapshot = async (signer, id, desc, endBlock) => {
+const makeCompSnapshot = async (signer: Wallet, id: number, desc: string, endBlock: number, spaceName: string) => {
 
     const space = await (await axios.get("https://hub.snapshot.page/api/spaces/" + spaceName)).data;
     const description = `This proposal is for voting on Compound's proposal #${id} using DPI. Please review the proposal here: https://compound.finance/governance/proposals/${id}`
@@ -73,11 +76,11 @@ const makeCompSnapshot = async (signer, id, desc, endBlock) => {
         data : data
     };
 
-    const res = await axios(config);
+    const res = await axios(config as any);
     return res.data.ipfsHash;
 }
 
-const messageDiscord = async (ipfsHash, id, desc) => {
+const messageDiscord = async (ipfsHash: string, id: number, desc: string, spaceName: string, webhook: string) => {
     const message = `A new proposal has been created for [COMPOUND-${id}] ${desc.split("#")[1].trim()}. This proposal is for voting on Compound's proposal #${id} using DPI. Please review the proposal here: https://snapshot.org/#/${spaceName}/proposal/${ipfsHash}`
     const data = JSON.stringify({ content: message });
     const config = {
@@ -89,5 +92,5 @@ const messageDiscord = async (ipfsHash, id, desc) => {
         data : data
     }
 
-    return await axios(config);
+    return await axios(config as any);
 }
