@@ -29,8 +29,11 @@ export const watchUniswap = () => {
         const endBlock = decodedEvent.endBlock.toNumber();
         const desc = decodedEvent.description;
 
-        const ipfsHash = await makeUniSnapshot(signer, id, desc, endBlock, spaceName);
-        await messageDiscord(ipfsHash, id, desc, spaceName, webhook);
+        const d = desc.split("#")
+        const propTitle = d.length > 1 ? d[1].trim() : "";
+
+        const ipfsHash = await makeUniSnapshot(signer, id, propTitle, endBlock, spaceName);
+        await messageDiscord(ipfsHash, id, propTitle, spaceName, webhook);
 
         console.log(ipfsHash);
     });
@@ -39,12 +42,12 @@ export const watchUniswap = () => {
 const makeUniSnapshot = async (signer: Wallet, id: number, desc: string, endBlock: number, spaceName: string) => {
 
     const description = `This proposal is for voting on Uniswap's proposal #${id} using DPI. Please review the proposal here: https://app.uniswap.org/#/vote/${id}`
-    const title = `[UNISWAP-${id}] ${desc.split("#")[1].trim()}`
+    const title = `[UNISWAP-${id}] ${desc}`
 
     return postToSnapshot(signer, title, description, endBlock, spaceName);
 }
 
 const messageDiscord = async (ipfsHash: string, id: number, desc: string, spaceName: string, webhook: string) => {
-    const message = `A new proposal has been created for [UNISWAP-${id}] ${desc.split("#")[1].trim()}. This proposal is for voting on Uniswap's proposal #${id} using DPI. Please review the proposal here: https://snapshot.org/#/${spaceName}/proposal/${ipfsHash}`
+    const message = `A new proposal has been created for [UNISWAP-${id}] ${desc}. This proposal is for voting on Uniswap's proposal #${id} using DPI. Please review the proposal here: https://snapshot.org/#/${spaceName}/proposal/${ipfsHash}`
     return await postToDiscord(message, webhook);
 }
