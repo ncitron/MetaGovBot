@@ -2,7 +2,7 @@
   "scripts": {
     "build": "tsc",
     "prestart": "npm run build",
-    "start": "node dir/index.js"
+    "start": "node dist/index.js"
   },
   "dependencies": {
     "@types/bs58": "^4.0.1",
