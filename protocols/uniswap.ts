@@ -29,14 +29,14 @@ export const watchUniswap = () => {
         const endBlock = decodedEvent.endBlock.toNumber();
         const desc = decodedEvent.description;
 
-        const ipfsHash = await makeCompSnapshot(signer, id, desc, endBlock, spaceName);
+        const ipfsHash = await makeUniSnapshot(signer, id, desc, endBlock, spaceName);
         await messageDiscord(ipfsHash, id, desc, spaceName, webhook);
 
         console.log(ipfsHash);
     });
 }
 
-const makeCompSnapshot = async (signer: Wallet, id: number, desc: string, endBlock: number, spaceName: string) => {
+const makeUniSnapshot = async (signer: Wallet, id: number, desc: string, endBlock: number, spaceName: string) => {
 
     const description = `This proposal is for voting on Uniswap's proposal #${id} using DPI. Please review the proposal here: https://app.uniswap.org/#/vote/${id}`
     const title = `[UNISWAP-${id}] ${desc.split("#")[1].trim()}`
