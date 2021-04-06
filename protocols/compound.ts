@@ -1,8 +1,8 @@
 import { ethers, providers, Wallet } from "ethers";
-import postToDiscord from "./utils/postToDiscord";
-import postToSnapshot from "./utils/postToSnapshot";
+import postToDiscord from "../utils/postToDiscord";
+import postToSnapshot from "../utils/postToSnapshot";
 
-require("dotenv").config()
+require("dotenv").config();
 
 export const watchCompound = () => {
     const provider: providers.JsonRpcProvider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_URL);
