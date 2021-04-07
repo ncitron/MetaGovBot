@@ -1,42 +1,32 @@
-import { ethers, providers, Wallet } from "ethers";
+import { Wallet } from "ethers";
+import { Result } from "ethers/lib/utils";
 import postToDiscord from "../utils/postToDiscord";
 import postToSnapshot from "../utils/postToSnapshot";
+import { watch } from "./watcher";
 
 require("dotenv").config();
 
 export const watchUniswap = () => {
-    const provider: providers.JsonRpcProvider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_URL);
-    const signer: Wallet = new Wallet(process.env.PRIV_KEY, provider);
 
-    const spaceName = process.env.SPACE_NAME;
-    const webhook = process.env.DISCORD_WEBHOOK;
-
+    const eventName = "ProposalCreated"
     const eventSignature = "ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)"
     const eventReadable = ["event ProposalCreated(uint id, address proposer, address[] targets, uint[] values, string[] signatures, bytes[] calldatas, uint startBlock, uint endBlock, string description)"]
 
-    const filter = {
-        address: process.env.UNISWAP_GOVERNANCE_ADDRESS,
-        topics: [
-            ethers.utils.id(eventSignature)
-        ]
-    }
+    watch(process.env.UNISWAP_GOVERNANCE_ADDRESS, eventName, eventSignature, eventReadable, onEvent);
+}
 
-    provider.on(filter, async (log, _) => {
-        const iface = new ethers.utils.Interface(eventReadable);
-        const decodedEvent = iface.decodeEventLog("ProposalCreated", log.data);
+const onEvent = async (event: Result, signer: Wallet, spaceName: string, webhook: string) => {
+    const id: number = event.id.toNumber();
+    const endBlock: number = event.endBlock.toNumber();
+    const desc: string = event.description;
 
-        const id: number = decodedEvent.id.toNumber();
-        const endBlock: number = decodedEvent.endBlock.toNumber();
-        const desc: string = decodedEvent.description;
+    const d = desc.split("#")
+    const propTitle = d.length > 1 ? d[1].trim() : "";
 
-        const d = desc.split("#")
-        const propTitle = d.length > 1 ? d[1].trim() : "";
+    const ipfsHash = await makeUniSnapshot(signer, id, propTitle, endBlock, spaceName);
+    await messageDiscord(ipfsHash, id, propTitle, spaceName, webhook);
 
-        const ipfsHash = await makeUniSnapshot(signer, id, propTitle, endBlock, spaceName);
-        await messageDiscord(ipfsHash, id, propTitle, spaceName, webhook);
-
-        console.log(ipfsHash);
-    });
+    console.log(ipfsHash);
 }
 
 const makeUniSnapshot = async (signer: Wallet, id: number, desc: string, endBlock: number, spaceName: string) => {

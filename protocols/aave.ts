@@ -1,48 +1,37 @@
-import { ethers, Wallet, providers } from "ethers";
+import { Wallet } from "ethers";
+import { Result } from "ethers/lib/utils";
 import { default as axios } from "axios";
 import * as bs58 from "bs58";
 
 import postToDiscord from "../utils/postToDiscord";
 import postToSnapshot from "../utils/postToSnapshot";
+import { watch } from "./watcher";
 
 
 export const watchAave = async () => {
 
-    const provider: providers.JsonRpcProvider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_URL);
-    const signer: Wallet = new Wallet(process.env.PRIV_KEY, provider);
-
-    const spaceName = process.env.SPACE_NAME;
-    const webhook = process.env.DISCORD_WEBHOOK;
-
+    const eventName = "ProposalCreated";
     const eventSignature = "ProposalCreated(uint256,address,address,address[],uint256[],string[],bytes[],bool[],uint256,uint256,address,bytes32)";
     const eventReadable = ["event ProposalCreated(uint256 id,address indexed creator, address indexed executor, address[] targets, uint256[] values,string[] signatures,bytes[] calldatas,bool[] withDelegatecalls,uint256 startBlock,uint256 endBlock,address strategy,bytes32 ipfsHash)"];
 
-    const filter = {
-        address: process.env.AAVE_GOVERNANCE_ADDRESS,
-        topics: [
-            ethers.utils.id(eventSignature)
-        ]
-    }
+    watch(process.env.AAVE_GOVERNANCE_ADDRESS, eventName, eventSignature, eventReadable, onEvent);
+}
 
-    provider.on(filter, async (log, _) => {
-        const iface = new ethers.utils.Interface(eventReadable);
-        const decodedEvent = iface.decodeEventLog("ProposalCreated", log.data);
+const onEvent = async (event: Result, signer: Wallet, spaceName: string, webhook: string) => {
+    const id = event.id.toNumber();
+    const endBlock = event.endBlock.toNumber();
+    const propIpfsRaw = event.ipfsHash.replace("0x", "");
 
-        const id = decodedEvent.id.toNumber();
-        const endBlock = decodedEvent.endBlock.toNumber();
-        const propIpfsRaw = decodedEvent.ipfsHash.replace("0x", "");
+    const bytes = Buffer.from("1220" + propIpfsRaw, 'hex');
+    const propIpfs = bs58.encode(bytes);
+    
+    const res = await axios.get("https://ipfs.io/ipfs/" + propIpfs);
+    const title = res.data.title;
 
-        const bytes = Buffer.from("1220" + propIpfsRaw, 'hex');
-        const propIpfs = bs58.encode(bytes);
-        
-        const res = await axios.get("https://ipfs.io/ipfs/" + propIpfs);
-        const title = res.data.title;
+    const ipfsHash = await makeAaveSnapshot(signer, id, propIpfs, title, endBlock, spaceName);
+    await messageDiscord(ipfsHash, id, title, spaceName, webhook);
 
-        const ipfsHash = await makeAaveSnapshot(signer, id, propIpfs, title, endBlock, spaceName);
-        await messageDiscord(ipfsHash, id, title, spaceName, webhook);
-
-        console.log(ipfsHash);
-    });
+    console.log(ipfsHash);
 }
 
 const makeAaveSnapshot = async (signer: Wallet, id: number, hash: string, propTitle: string, endBlock: number, spaceName: string) => {
