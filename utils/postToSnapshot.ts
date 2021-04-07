@@ -1,7 +1,7 @@
 import { Wallet } from "ethers";
 import { default as axios } from "axios";
 
-export default async (signer: Wallet, title: string, description: string, endBlock: number, spaceName: string) => {
+export default async (signer: Wallet, title: string, description: string, endBlock: number, spaceName: string, choices: string[]) => {
     const space = await (await axios.get("https://hub.snapshot.page/api/spaces/" + spaceName)).data;
 
     const now = Math.floor(Date.now()/1000);
@@ -15,7 +15,7 @@ export default async (signer: Wallet, title: string, description: string, endBlo
         payload: {
             name: title,
             body: description,
-            choices: ["For","Against"],
+            choices: choices,
             start: now,
             end: endTime,
             snapshot: await signer.provider.getBlockNumber(),

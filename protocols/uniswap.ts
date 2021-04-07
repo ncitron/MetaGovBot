@@ -25,9 +25,9 @@ export const watchUniswap = () => {
         const iface = new ethers.utils.Interface(eventReadable);
         const decodedEvent = iface.decodeEventLog("ProposalCreated", log.data);
 
-        const id = decodedEvent.id.toNumber();
-        const endBlock = decodedEvent.endBlock.toNumber();
-        const desc = decodedEvent.description;
+        const id: number = decodedEvent.id.toNumber();
+        const endBlock: number = decodedEvent.endBlock.toNumber();
+        const desc: string = decodedEvent.description;
 
         const d = desc.split("#")
         const propTitle = d.length > 1 ? d[1].trim() : "";
@@ -44,7 +44,7 @@ const makeUniSnapshot = async (signer: Wallet, id: number, desc: string, endBloc
     const description = `This proposal is for voting on Uniswap's proposal #${id} using DPI. Please review the proposal here: https://app.uniswap.org/#/vote/${id}`
     const title = `[UNISWAP-${id}] ${desc}`
 
-    return postToSnapshot(signer, title, description, endBlock, spaceName);
+    return postToSnapshot(signer, title, description, endBlock, spaceName, ["For","Against"]);
 }
 
 const messageDiscord = async (ipfsHash: string, id: number, desc: string, spaceName: string, webhook: string) => {

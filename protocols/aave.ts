@@ -50,7 +50,7 @@ const makeAaveSnapshot = async (signer: Wallet, id: number, hash: string, propTi
     const description = `This proposal is for voting on Aave's proposal #${id+5} using DPI. Please review the proposal here: https://app.aave.com/governance/${id}-${hash}`
     const title = `[AAVE-${id+5}] ${propTitle}`
 
-    return postToSnapshot(signer, title, description, endBlock, spaceName);
+    return postToSnapshot(signer, title, description, endBlock, spaceName, ["For","Against"]);
 }
 
 const messageDiscord = async (ipfsHash: string, id: number, title: string, spaceName: string, webhook: string) => {

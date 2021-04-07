@@ -25,15 +25,15 @@ export const watchCompound = () => {
         const iface = new ethers.utils.Interface(eventReadable);
         const decodedEvent = iface.decodeEventLog("ProposalCreated", log.data);
 
-        const id = decodedEvent.id.toNumber();
-        const endBlock = decodedEvent.endBlock.toNumber();
-        const desc = decodedEvent.description;
+        const id: number = decodedEvent.id.toNumber();
+        const endBlock: number = decodedEvent.endBlock.toNumber();
+        const desc: string = decodedEvent.description;
 
         const d = desc.split("#")
         const propTitle = d.length > 1 ? d[1].trim() : "";
 
         const ipfsHash = await makeCompSnapshot(signer, id, propTitle, endBlock, spaceName);
-        await messageDiscord(ipfsHash, propTitle, desc, spaceName, webhook);
+        await messageDiscord(ipfsHash, id, propTitle, spaceName, webhook);
 
         console.log(ipfsHash);
     });
@@ -44,10 +44,12 @@ const makeCompSnapshot = async (signer: Wallet, id: number, desc: string, endBlo
     const description = `This proposal is for voting on Compound's proposal #${id} using DPI. Please review the proposal here: https://compound.finance/governance/proposals/${id}`
     const title = `[COMPOUND-${id}] ${desc}`
 
-    return postToSnapshot(signer, title, description, endBlock, spaceName);
+    return postToSnapshot(signer, title, description, endBlock, spaceName, ["For","Against"]);
 }
 
 const messageDiscord = async (ipfsHash: string, id: number, desc: string, spaceName: string, webhook: string) => {
     const message = `A new proposal has been created for [COMPOUND-${id}] ${desc}. This proposal is for voting on Compound's proposal #${id} using DPI. Please review the proposal here: https://snapshot.org/#/${spaceName}/proposal/${ipfsHash}`
+    console.log(id);
+    console.log(message);
     return await postToDiscord(message, webhook);
 }
