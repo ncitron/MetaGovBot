@@ -7,6 +7,7 @@ import postToDiscord from "../utils/postToDiscord";
 import postToSnapshot from "../utils/postToSnapshot";
 import { watch } from "../utils/watcher";
 
+require("dotenv").config();
 
 export const watchAave = async () => {
 
