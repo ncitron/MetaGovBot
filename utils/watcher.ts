@@ -1,6 +1,9 @@
 import { ethers, providers, Wallet } from "ethers";
 import { Result } from "ethers/lib/utils";
 
+require("dotenv").config();
+
+
 type Callback = (event: Result, signer: Wallet, spaceName: string, webhook: string) => void
 
 export const watch = async (address: string, eventName: string, eventSignature: string, eventReadable: string[], callBack: Callback) => {

@@ -6,6 +6,7 @@ import { watch } from "../utils/watcher";
 
 require("dotenv").config();
 
+
 export const watchCompound = () => {
 
     const eventName = "ProposalCreated"
