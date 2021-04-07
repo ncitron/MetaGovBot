@@ -5,7 +5,7 @@ import * as bs58 from "bs58";
 
 import postToDiscord from "../utils/postToDiscord";
 import postToSnapshot from "../utils/postToSnapshot";
-import { watch } from "./watcher";
+import { watch } from "../utils/watcher";
 
 
 export const watchAave = async () => {

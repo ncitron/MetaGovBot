@@ -2,7 +2,7 @@ import { Wallet } from "ethers";
 import { Result } from "ethers/lib/utils";
 import postToDiscord from "../utils/postToDiscord";
 import postToSnapshot from "../utils/postToSnapshot";
-import { watch } from "./watcher";
+import { watch } from "../utils/watcher";
 
 require("dotenv").config();
 
