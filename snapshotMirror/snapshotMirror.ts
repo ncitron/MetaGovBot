@@ -1,6 +1,7 @@
 import { default as axios } from "axios";
 import { ethers, Wallet, providers } from "ethers";
-import postToSnapshot, { rawPost } from "../utils/postToSnapshot";
+import postToDiscord from "../utils/postToDiscord";
+import { postToSnapshot } from "../utils/postToSnapshot";
 
 require("dotenv").config();
 
@@ -25,7 +26,9 @@ export class SnapshotMirror {
 
         if (newProps.length > 0) {
             const res = await axios.get("https://ipfs.io/ipfs/" + newProps[0]);
-            this._postToSnapshot(newProps[0], res.data);
+            const hash = await this._postToSnapshot(newProps[0], res.data);
+            console.log(hash);
+            this._postToDiscord(hash, res.data);
         }
 
         this._currentProps = currentProps;
@@ -46,7 +49,7 @@ export class SnapshotMirror {
         const space: string = msg.space;
         const spaceName = space.replace(".eth", "").toUpperCase();
         const payload = msg.payload;
-        rawPost(
+        return await postToSnapshot(
             signer,
             `[${spaceName}] ${payload.name}`,
             `This proposal is for voting on ${spaceName}'s newest proposal using DPI. Please review the proposal here: https://snapshot.org/#/${space}/proposal/${hash}`,
@@ -54,6 +57,16 @@ export class SnapshotMirror {
             process.env.SPACE_NAME,
             payload.choices
         );
+    }
+
+    async _postToDiscord(hash: string, prop) {
+        const msg = JSON.parse(prop.msg);
+        const space: string = msg.space;
+        const spaceName = space.replace(".eth", "").toUpperCase();
+        const payload = msg.payload;
+
+        const message = `A new proposal has been created for [${spaceName}] ${payload.name}. This proposal is for voting on ${spaceName}'s newest proposal using DPI. Please review the proposal here: https://snapshot.org/#/${process.env.SPACE_NAME}/proposal/${hash}`
+        postToDiscord(message, process.env.DISCORD_WEBHOOK);
     }
 
 }

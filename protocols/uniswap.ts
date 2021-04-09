@@ -1,7 +1,7 @@
 import { Wallet } from "ethers";
 import { Result } from "ethers/lib/utils";
 import postToDiscord from "../utils/postToDiscord";
-import postToSnapshot from "../utils/postToSnapshot";
+import { postToSnapshotBlocknum } from "../utils/postToSnapshot";
 import { watch } from "../utils/watcher";
 
 require("dotenv").config();
@@ -35,7 +35,7 @@ const makeUniSnapshot = async (signer: Wallet, id: number, desc: string, endBloc
     const description = `This proposal is for voting on Uniswap's proposal #${id} using DPI. Please review the proposal here: https://app.uniswap.org/#/vote/${id}`
     const title = `[UNISWAP-${id}] ${desc}`
 
-    return postToSnapshot(signer, title, description, endBlock, spaceName, ["For","Against"]);
+    return postToSnapshotBlocknum(signer, title, description, endBlock, spaceName, ["For","Against"]);
 }
 
 const messageDiscord = async (ipfsHash: string, id: number, desc: string, spaceName: string, webhook: string) => {

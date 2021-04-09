@@ -5,9 +5,9 @@ import {SnapshotMirror } from "./snapshotMirror/snapshotMirror";
 
 require("dotenv").config();
 
-//watchCompound();
-//watchAave();
-//watchUniswap();
+watchCompound();
+watchAave();
+watchUniswap();
 
 const mirror = new SnapshotMirror([process.env.WATCHED_SPACE]);
 mirror.watchSnapshot();
