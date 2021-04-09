@@ -1,9 +1,15 @@
 import { watchAave } from "./protocols/aave";
 import { watchCompound } from "./protocols/compound"
 import { watchUniswap } from "./protocols/uniswap";
+import {SnapshotMirror } from "./snapshotMirror/snapshotMirror";
 
-watchCompound();
-watchAave();
-watchUniswap();
+require("dotenv").config();
+
+//watchCompound();
+//watchAave();
+//watchUniswap();
+
+const mirror = new SnapshotMirror([process.env.WATCHED_SPACE]);
+mirror.watchSnapshot();
 
 console.log("watching for new proposals...")
