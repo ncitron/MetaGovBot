@@ -1,15 +1,18 @@
 import { Wallet } from "ethers";
 import { default as axios } from "axios";
 
+require("dotenv").config();
+
+
 export default async (signer: Wallet, title: string, description: string, endBlock: number, spaceName: string, choices: string[]) => {
-    const space = await (await axios.get("https://hub.snapshot.page/api/spaces/" + spaceName)).data;
+    const space = await (await axios.get(process.env.SNAPSHOT_HUB + "/api/spaces/" + spaceName)).data;
 
     const now = Math.floor(Date.now()/1000);
     const endTime = now + 13 * (endBlock - await signer.provider.getBlockNumber()) - 24 * 60 * 60;
 
     const prop = {
         version: "0.1.3",
-        timestamp: (now-600) + "",
+        timestamp: (now-60) + "",
         space: spaceName,
         type: "proposal",
         payload: {
@@ -33,7 +36,7 @@ export default async (signer: Wallet, title: string, description: string, endBlo
     
     const config = {
         method: 'post',
-        url: 'https://hub.snapshot.org/api/message',
+        url: process.env.SNAPSHOT_HUB + '/api/message',
         headers: { 
             'Content-Type': 'application/json', 
         },
