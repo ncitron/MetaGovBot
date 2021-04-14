@@ -28,7 +28,8 @@ const onEvent = async (event: Result, signer: Wallet, spaceName: string, webhook
     const propIpfs = bs58.encode(bytes);
     
     const res = await axios.get("https://ipfs.io/ipfs/" + propIpfs);
-    const title = res.data.title;
+    const titleRaw = res.data.title;
+    const title = titleRaw.length < 250 ? titleRaw : "";
 
     const ipfsHash = await makeAaveSnapshot(signer, id, propIpfs, title, endBlock, spaceName);
     await messageDiscord(ipfsHash, id, title, spaceName, webhook);

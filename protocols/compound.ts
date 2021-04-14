@@ -22,7 +22,8 @@ const onEvent = async (event: Result, signer: Wallet, spaceName: string, webhook
     const desc: string = event.description;
 
     const d = desc.split("#")
-    const propTitle = d.length > 1 ? d[1].trim() : "";
+    const propTitleRaw = d.length > 1 ? d[1].trim() : "";
+    const propTitle = propTitleRaw.length < 250 ? propTitleRaw : "";
 
     const ipfsHash = await makeCompSnapshot(signer, id, propTitle, endBlock, spaceName);
     await messageDiscord(ipfsHash, id, propTitle, spaceName, webhook);
