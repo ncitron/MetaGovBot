@@ -3,13 +3,19 @@ import { default as axios } from "axios";
 
 require("dotenv").config();
 
+export const postToSnapshotBlocknum = async (signer: Wallet, title: string, description: string, endBlock: number, spaceName: string, choices: string[]) => {
+    const now = Math.floor(Date.now()/1000);
+    const endTime = now + 13 * (endBlock - await signer.provider.getBlockNumber()) - 24 * 60 * 60;
+    
+    return postToSnapshot(signer, title, description, endTime, spaceName, choices);
+}
 
-export default async (signer: Wallet, title: string, description: string, endBlock: number, spaceName: string, choices: string[]) => {
+export const postToSnapshot = async (signer: Wallet, title: string, description: string, endTime: number, spaceName: string, choices: string[]) => {
+
     const space = await (await axios.get(process.env.SNAPSHOT_HUB + "/api/spaces/" + spaceName)).data;
     const version = await (await axios.get(process.env.SNAPSHOT_HUB + "/api")).data.version;
 
     const now = Math.floor(Date.now()/1000);
-    const endTime = now + 13 * (endBlock - await signer.provider.getBlockNumber()) - 24 * 60 * 60;
 
     const prop = {
         version: version,

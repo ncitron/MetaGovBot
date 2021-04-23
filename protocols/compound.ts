@@ -1,7 +1,7 @@
 import { Wallet } from "ethers";
 import { Result } from "ethers/lib/utils";
 import postToDiscord from "../utils/postToDiscord";
-import postToSnapshot from "../utils/postToSnapshot";
+import { postToSnapshotBlocknum } from "../utils/postToSnapshot";
 import { watch } from "../utils/watcher";
 
 require("dotenv").config();
@@ -36,7 +36,7 @@ const makeCompSnapshot = async (signer: Wallet, id: number, desc: string, endBlo
     const description = `This proposal is for voting on Compound's proposal #${id} using DPI. Please review the proposal here: https://compound.finance/governance/proposals/${id}`
     const title = `[COMPOUND-${id}] ${desc}`
 
-    return postToSnapshot(signer, title, description, endBlock, spaceName, ["For","Against"]);
+    return postToSnapshotBlocknum(signer, title, description, endBlock, spaceName, ["For","Against"]);
 }
 
 const messageDiscord = async (ipfsHash: string, id: number, desc: string, spaceName: string, webhook: string) => {
