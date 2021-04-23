@@ -8,7 +8,7 @@ type Callback = (event: Result, signer: Wallet, spaceName: string, webhook: stri
 
 export const watch = async (address: string, eventName: string, eventSignature: string, eventReadable: string[], callBack: Callback) => {
 
-    const provider: providers.JsonRpcProvider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_URL);
+    const provider: providers.JsonRpcProvider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
     const signer: Wallet = new Wallet(process.env.PRIV_KEY, provider);
 
     const spaceName = process.env.SPACE_NAME;

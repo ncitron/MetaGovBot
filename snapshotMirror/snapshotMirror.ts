@@ -22,7 +22,7 @@ export class SnapshotMirror {
     async _checkNewProp() {
         const currentProps = await this._getCurrentProposals();
     
-        let newProps = currentProps.filter(prop => !this._currentProps.includes(prop));
+        const newProps = currentProps.filter(prop => !this._currentProps.includes(prop));
 
         if (newProps.length > 0) {
             const res = await axios.get("https://ipfs.io/ipfs/" + newProps[0]);
@@ -36,13 +36,16 @@ export class SnapshotMirror {
 
     async _getCurrentProposals(): Promise<string[]> {
         return (await Promise.all(this._spaces.map(async space => {
-            const res = await axios.get(`https://hub.snapshot.page/api/${space}/proposals`)
-            return Object.keys(res.data);
+            const coreMembers = (await axios.get(process.env.SNAPSHOT_HUB + `/api/spaces/${space}`)).data.members;
+            const res = await axios.get(process.env.SNAPSHOT_HUB + `/api/${space}/proposals`)
+            const props = res.data;
+            const propHashes = Object.keys(res.data);
+            return propHashes.filter(hash => coreMembers.includes(props[hash].address));
         }))).flat();
     }
 
     async _postToSnapshot(hash: string, prop) {
-        const provider: providers.JsonRpcProvider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_URL);
+        const provider: providers.JsonRpcProvider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
         const signer: Wallet = new Wallet(process.env.PRIV_KEY, provider);
 
         const msg = JSON.parse(prop.msg);

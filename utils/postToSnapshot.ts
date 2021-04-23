@@ -1,6 +1,8 @@
 import { Wallet } from "ethers";
 import { default as axios } from "axios";
 
+require("dotenv").config();
+
 export const postToSnapshotBlocknum = async (signer: Wallet, title: string, description: string, endBlock: number, spaceName: string, choices: string[]) => {
     const now = Math.floor(Date.now()/1000);
     const endTime = now + 13 * (endBlock - await signer.provider.getBlockNumber()) - 24 * 60 * 60;
@@ -9,13 +11,15 @@ export const postToSnapshotBlocknum = async (signer: Wallet, title: string, desc
 }
 
 export const postToSnapshot = async (signer: Wallet, title: string, description: string, endTime: number, spaceName: string, choices: string[]) => {
-    const space = await (await axios.get("https://hub.snapshot.page/api/spaces/" + spaceName)).data;
+
+    const space = await (await axios.get(process.env.SNAPSHOT_HUB + "/api/spaces/" + spaceName)).data;
+    const version = await (await axios.get(process.env.SNAPSHOT_HUB + "/api")).data.version;
 
     const now = Math.floor(Date.now()/1000);
 
     const prop = {
-        version: "0.1.3",
-        timestamp: (now-600) + "",
+        version: version,
+        timestamp: (now-60) + "",
         space: spaceName,
         type: "proposal",
         payload: {
@@ -39,13 +43,17 @@ export const postToSnapshot = async (signer: Wallet, title: string, description:
     
     const config = {
         method: 'post',
-        url: 'https://hub.snapshot.org/api/message',
+        url: process.env.SNAPSHOT_HUB + '/api/message',
         headers: { 
             'Content-Type': 'application/json', 
         },
         data : data
     };
 
-    const res = await axios(config as any);
-    return res.data.ipfsHash;
+    try {
+        const res = await axios(config as any);
+        return res.data.ipfsHash;
+    } catch (e) {
+        console.error(e);
+    }
 }
