@@ -50,7 +50,7 @@ export class SnapshotMirror {
 
         const msg = JSON.parse(prop.msg);
         const space: string = msg.space;
-        const spaceName = space.replace(".eth", "").toUpperCase();
+        const spaceName = (await axios.get(process.env.SNAPSHOT_HUB + `/api/spaces/${space}`)).data.name.toUpperCase();
         const payload = msg.payload;
         return await postToSnapshot(
             signer,
@@ -65,7 +65,7 @@ export class SnapshotMirror {
     async _postToDiscord(hash: string, prop) {
         const msg = JSON.parse(prop.msg);
         const space: string = msg.space;
-        const spaceName = space.replace(".eth", "").toUpperCase();
+        const spaceName = (await axios.get(process.env.SNAPSHOT_HUB + `/api/spaces/${space}`)).data.name.toUpperCase();
         const payload = msg.payload;
 
         const message = `A new proposal has been created for [${spaceName}] ${payload.name}. This proposal is for voting on ${spaceName}'s newest proposal using DPI. Please review the proposal here: https://snapshot.org/#/${process.env.SPACE_NAME}/proposal/${hash}`
