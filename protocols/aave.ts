@@ -39,13 +39,13 @@ const onEvent = async (event: Result, signer: Wallet, spaceName: string, webhook
 
 const makeAaveSnapshot = async (signer: Wallet, id: number, hash: string, propTitle: string, endBlock: number, spaceName: string) => {
 
-    const description = `This proposal is for voting on Aave's proposal #${id+5} using DPI. Please review the proposal here: https://app.aave.com/governance/${id}-${hash}`
-    const title = `[AAVE-${id+5}] ${propTitle}`
+    const description = `This proposal is for voting on Aave's proposal #${id+6} using DPI. Please review the proposal here: https://app.aave.com/governance/${id}-${hash}`
+    const title = `[AAVE-${id+6}] ${propTitle}`
 
     return postToSnapshotBlocknum(signer, title, description, endBlock, spaceName, ["For","Against"]);
 }
 
 const messageDiscord = async (ipfsHash: string, id: number, title: string, spaceName: string, webhook: string) => {
-    const message = `A new proposal has been created for [AAVE-${id+5}] ${title}. This proposal is for voting on Aave's proposal #${id+5} using DPI. Please review the proposal here: https://snapshot.org/#/${spaceName}/proposal/${ipfsHash}`
+    const message = `A new proposal has been created for [AAVE-${id+6}] ${title}. This proposal is for voting on Aave's proposal #${id+6} using DPI. Please review the proposal here: https://snapshot.org/#/${spaceName}/proposal/${ipfsHash}`
     return await postToDiscord(message, webhook);
 }
