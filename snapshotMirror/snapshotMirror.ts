@@ -25,7 +25,10 @@ export class SnapshotMirror {
         const newProps = currentProps.filter(prop => !this._currentProps.includes(prop));
 
         if (newProps.length > 0) {
-            const res = await axios.get("https://ipfs.io/ipfs/" + newProps[0]);
+            const res = await axios.get("https://ipfs.io/ipfs/" + newProps[0]).catch(err => {
+                console.error(err);
+                throw err;
+            });
             const hash = await this._postToSnapshot(newProps[0], res.data);
             console.log(hash);
             this._postToDiscord(hash, res.data);
@@ -36,11 +39,12 @@ export class SnapshotMirror {
 
     async _getCurrentProposals(): Promise<string[]> {
         return (await Promise.all(this._spaces.map(async space => {
-            const coreMembers = (await axios.get(process.env.SNAPSHOT_HUB + `/api/spaces/${space}`)).data.members;
-            const res = await axios.get(process.env.SNAPSHOT_HUB + `/api/${space}/proposals`)
-            const props = res.data;
+            const res = await axios.get(process.env.SNAPSHOT_HUB + `/api/${space}/proposals`).catch(err => {
+                console.error(err);
+                throw err;
+            });
             const propHashes = Object.keys(res.data);
-            return propHashes.filter(hash => coreMembers.includes(props[hash].address));
+            return propHashes;
         }))).flat();
     }
 
@@ -50,7 +54,11 @@ export class SnapshotMirror {
 
         const msg = JSON.parse(prop.msg);
         const space: string = msg.space;
-        const spaceName = (await axios.get(process.env.SNAPSHOT_HUB + `/api/spaces/${space}`)).data.name.toUpperCase();
+        const res = await axios.get(process.env.SNAPSHOT_HUB + `/api/spaces/${space}`).catch(err => {
+            console.error(err);
+            throw err;
+        });
+        const spaceName = res.data.name.toUpperCase();
         const payload = msg.payload;
         return await postToSnapshot(
             signer,
@@ -65,7 +73,11 @@ export class SnapshotMirror {
     async _postToDiscord(hash: string, prop) {
         const msg = JSON.parse(prop.msg);
         const space: string = msg.space;
-        const spaceName = (await axios.get(process.env.SNAPSHOT_HUB + `/api/spaces/${space}`)).data.name.toUpperCase();
+        const res = await axios.get(process.env.SNAPSHOT_HUB + `/api/spaces/${space}`).catch(err => {
+            console.error(err);
+            return null;
+        })
+        const spaceName = res.data.name.toUpperCase();
         const payload = msg.payload;
 
         const message = `A new proposal has been created for [${spaceName}] ${payload.name}. This proposal is for voting on ${spaceName}'s newest proposal using DPI. Please review the proposal here: https://snapshot.org/#/${process.env.SPACE_NAME}/proposal/${hash}`
