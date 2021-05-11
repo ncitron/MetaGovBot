@@ -16,7 +16,7 @@ export class SnapshotMirror {
 
     async watchSnapshot() {
         this._currentProps = await this._getCurrentProposals();
-        setInterval(async () => await this._checkNewProp(), 5000)
+        setInterval(async () => await this._checkNewProp(), parseInt(process.env.DELAY));
     }
 
     async _checkNewProp() {
