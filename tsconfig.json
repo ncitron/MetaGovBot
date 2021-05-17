@@ -10,6 +10,7 @@
       "alwaysStrict": true,       // Enable JavaScript's "use strict" mode
       "outDir": "dist",
       "lib": [ "es2019", "DOM", "ES6" ,"DOM.Iterable", "ScriptHost"],
+      "esModuleInterop": true,
     },
     "include": ["**/*.ts", "**/*.tsx"],
     "exclude": ["node_modules"]

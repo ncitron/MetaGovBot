@@ -1,10 +1,13 @@
 import { default as axios } from "axios";
+import axiosRetry from "axios-retry";
 import { ethers, Wallet, providers } from "ethers";
 import postToDiscord from "../utils/postToDiscord";
 import postToSlack from "../utils/postToSlack";
 import { postToSnapshot } from "../utils/postToSnapshot";
 
 require("dotenv").config();
+
+axiosRetry(axios, { retries: 3 });
 
 export class SnapshotMirror {
 
