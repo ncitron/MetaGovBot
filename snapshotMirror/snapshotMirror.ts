@@ -1,6 +1,7 @@
 import { default as axios } from "axios";
 import { ethers, Wallet, providers } from "ethers";
 import postToDiscord from "../utils/postToDiscord";
+import postToSlack from "../utils/postToSlack";
 import { postToSnapshot } from "../utils/postToSnapshot";
 
 require("dotenv").config();
@@ -81,6 +82,7 @@ export class SnapshotMirror {
         const payload = msg.payload;
 
         const message = `A new proposal has been created for [${spaceName}] ${payload.name}. This proposal is for voting on ${spaceName}'s newest proposal using DPI. Please review the proposal here: https://snapshot.org/#/${process.env.SPACE_NAME}/proposal/${hash}`
+        postToSlack(message, process.env.SLACK_WEBHOOK);
         postToDiscord(message, process.env.DISCORD_WEBHOOK);
     }
 

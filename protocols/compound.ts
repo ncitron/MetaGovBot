@@ -1,6 +1,7 @@
 import { Wallet } from "ethers";
 import { Result } from "ethers/lib/utils";
 import postToDiscord from "../utils/postToDiscord";
+import postToSlack from "../utils/postToSlack";
 import { postToSnapshotBlocknum } from "../utils/postToSnapshot";
 import { watch } from "../utils/watcher";
 
@@ -41,7 +42,6 @@ const makeCompSnapshot = async (signer: Wallet, id: number, desc: string, endBlo
 
 const messageDiscord = async (ipfsHash: string, id: number, desc: string, spaceName: string, webhook: string) => {
     const message = `A new proposal has been created for [COMPOUND-${id}] ${desc}. This proposal is for voting on Compound's proposal #${id} using DPI. Please review the proposal here: https://snapshot.org/#/${spaceName}/proposal/${ipfsHash}`
-    console.log(id);
-    console.log(message);
+    await postToSlack(message, process.env.SLACK_WEBHOOK);
     return await postToDiscord(message, webhook);
 }

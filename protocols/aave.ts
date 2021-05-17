@@ -4,6 +4,7 @@ import { default as axios } from "axios";
 import * as bs58 from "bs58";
 
 import postToDiscord from "../utils/postToDiscord";
+import postToSlack from "../utils/postToSlack";
 import { postToSnapshotBlocknum } from "../utils/postToSnapshot";
 import { watch } from "../utils/watcher";
 
@@ -47,5 +48,6 @@ const makeAaveSnapshot = async (signer: Wallet, id: number, hash: string, propTi
 
 const messageDiscord = async (ipfsHash: string, id: number, title: string, spaceName: string, webhook: string) => {
     const message = `A new proposal has been created for [AAVE-${id+5}] ${title}. This proposal is for voting on Aave's proposal #${id+5} using DPI. Please review the proposal here: https://snapshot.org/#/${spaceName}/proposal/${ipfsHash}`
+    await postToSlack(message, process.env.SLACK_WEBHOOK);
     return await postToDiscord(message, webhook);
 }

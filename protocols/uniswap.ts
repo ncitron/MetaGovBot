@@ -1,6 +1,7 @@
 import { Wallet } from "ethers";
 import { Result } from "ethers/lib/utils";
 import postToDiscord from "../utils/postToDiscord";
+import postToSlack from "../utils/postToSlack";
 import { postToSnapshotBlocknum } from "../utils/postToSnapshot";
 import { watch } from "../utils/watcher";
 
@@ -41,5 +42,6 @@ const makeUniSnapshot = async (signer: Wallet, id: number, desc: string, endBloc
 
 const messageDiscord = async (ipfsHash: string, id: number, desc: string, spaceName: string, webhook: string) => {
     const message = `A new proposal has been created for [UNISWAP-${id}] ${desc}. This proposal is for voting on Uniswap's proposal #${id} using DPI. Please review the proposal here: https://snapshot.org/#/${spaceName}/proposal/${ipfsHash}`
+    await postToSlack(message, process.env.SLACK_WEBHOOK);
     return await postToDiscord(message, webhook);
 }
