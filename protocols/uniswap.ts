@@ -34,14 +34,14 @@ const onEvent = async (event: Result, signer: Wallet, spaceName: string, webhook
 
 const makeUniSnapshot = async (signer: Wallet, id: number, desc: string, endBlock: number, spaceName: string) => {
 
-    const description = `This proposal is for voting on Uniswap's proposal #${id} using DPI. Please review the proposal here: https://app.uniswap.org/#/vote/${id}`
-    const title = `[UNISWAP-${id}] ${desc}`
+    const description = `This proposal is for voting on Uniswap's proposal 1.${id} using DPI. Please review the proposal here: https://app.uniswap.org/#/vote/0/${id}`
+    const title = `[UNISWAP-1.${id}] ${desc}`
 
     return postToSnapshotBlocknum(signer, title, description, endBlock, spaceName, ["For","Against"]);
 }
 
 const messageDiscord = async (ipfsHash: string, id: number, desc: string, spaceName: string, webhook: string) => {
-    const message = `A new proposal has been created for [UNISWAP-${id}] ${desc}. This proposal is for voting on Uniswap's proposal #${id} using DPI. Please review the proposal here: https://snapshot.org/#/${spaceName}/proposal/${ipfsHash}`
+    const message = `A new proposal has been created for [UNISWAP-1.${id}] ${desc}. This proposal is for voting on Uniswap's proposal 1.${id} using DPI. Please review the proposal here: https://snapshot.org/#/${spaceName}/proposal/${ipfsHash}`
     await postToSlack(message, process.env.SLACK_WEBHOOK);
     return await postToDiscord(message, webhook);
 }
