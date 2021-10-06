@@ -46,12 +46,34 @@ export class SnapshotMirror {
 
     async _getCurrentProposals(): Promise<string[]> {
         return (await Promise.all(this._spaces.map(async space => {
-            const res = await axios.get(process.env.SNAPSHOT_HUB + `/api/${space}/proposals`).catch(err => {
-                console.error(err);
-                throw err;
+
+            var data = JSON.stringify({
+              query: `{
+                proposals (
+                    where: {space_in: ["${space}"]},
+                    orderBy: "created",
+                    first: 1000000
+                ) {
+                    id
+                    title
+                    created
+                }
+            }`,
+              variables: {}
             });
-            const propHashes = Object.keys(res.data);
-            return propHashes;
+            
+            var config = {
+              method: 'get',
+              url: 'https://hub.snapshot.org/graphql',
+              headers: { 
+                'Content-Type': 'application/json'
+              },
+              data : data
+            };
+            
+            const rawProps = (await axios(config as any)).data.data.proposals;
+            return rawProps.map(prop => prop.id);
+
         }))).flat();
     }
 
