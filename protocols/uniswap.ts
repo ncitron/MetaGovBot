@@ -36,7 +36,7 @@ const onEvent = async (event: Result, signer: Wallet, spaceName: string, webhook
 
 const makeUniSnapshot = async (signer: Wallet, id: number, desc: string, endBlock: number, spaceName: string, quorum: string) => {
 
-    const description = `This proposal is for voting on Uniswap's proposal 1.${id} using DPI. Please review the proposal here: https://app.uniswap.org/#/vote/0/${id} \n\n Quorum for this vote is ${quorum} INDEX.`
+    const description = `This proposal is for voting on Uniswap's proposal 1.${id} using DPI. Please review the proposal here: https://app.uniswap.org/#/vote/2/${id} \n\n Quorum for this vote is ${quorum} INDEX.`
     const title = `[UNISWAP-1.${id}] ${desc}`
 
     return postToSnapshotBlocknum(signer, title, description, endBlock, spaceName, ["For","Against"]);
