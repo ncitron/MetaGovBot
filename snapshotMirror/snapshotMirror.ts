@@ -55,6 +55,7 @@ export class SnapshotMirror {
                     first: 1000000
                 ) {
                     id
+                    ipfs
                     title
                     created
                 }
@@ -72,7 +73,7 @@ export class SnapshotMirror {
             };
             
             const rawProps = (await axios(config as any)).data.data.proposals;
-            return rawProps.map(prop => prop.id);
+            return rawProps.map(prop => prop.ipfs);
 
         }))).flat();
     }
