@@ -100,7 +100,7 @@ export class SnapshotMirror {
           };
           
           const rawProps = (await axios(config as any)).data.data.proposals;
-          return rawProp[0].id;
+          return rawProps[0].id;
 
     }
 
