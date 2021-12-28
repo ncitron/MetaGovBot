@@ -78,6 +78,32 @@ export class SnapshotMirror {
         }))).flat();
     }
 
+    async _getIdFromHash(hash: string): Promise<string> {
+        var data = JSON.stringify({
+            query: `{
+              proposals (
+                  where: {ipfs: "${hash}"},
+              ) {
+                  id
+              }
+          }`,
+            variables: {}
+          });
+          
+          var config = {
+            method: 'get',
+            url: 'https://hub.snapshot.org/graphql',
+            headers: { 
+              'Content-Type': 'application/json'
+            },
+            data : data
+          };
+          
+          const rawProps = (await axios(config as any)).data.data.proposals;
+          return rawProps[0].id;
+
+    }
+
     async _postToSnapshot(hash: string, prop, quorum: string) {
         const provider: providers.JsonRpcProvider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
         const signer: Wallet = new Wallet(process.env.PRIV_KEY, provider);
@@ -90,10 +116,13 @@ export class SnapshotMirror {
         });
         const spaceName = res.data.name.toUpperCase();
         const payload = msg.payload;
+
+        const id = await this._getIdFromHash(hash);
+
         return await postToSnapshot(
             signer,
             `[${spaceName}] ${payload.name}`,
-            `This proposal is for voting on ${spaceName}'s newest proposal using DPI. Please review the proposal here: https://snapshot.org/#/${space}/proposal/${hash} \n\n Quorum for this vote is ${quorum} INDEX.`,
+            `This proposal is for voting on ${spaceName}'s newest proposal using DPI. Please review the proposal here: https://snapshot.org/#/${space}/proposal/${id} \n\n Quorum for this vote is ${quorum} INDEX.`,
             payload.end - 24 * 60 * 60,
             process.env.SPACE_NAME,
             payload.choices
